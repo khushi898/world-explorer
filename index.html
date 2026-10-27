@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="Explore countries around the world, discover cultures, save favourites and compare destinations."
+  >
+
+  <meta name="theme-color" content="#071421">
+
+  <title>World Explorer | Discover the World</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <nav class="navbar" aria-label="Main navigation">
+
+      <a href="#" class="brand" aria-label="World Explorer Home">
+        <span class="brand-icon">🌍</span>
+
+        <span>
+          World<span class="brand-accent">Explorer</span>
+        </span>
+      </a>
+
+      <div class="nav-right">
+        <span class="nav-label">
+          Discover beyond borders
+        </span>
+
+        <a href="#explore" class="nav-explore">
+          Start Exploring
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HERO SECTION -->
+    <section class="hero" aria-labelledby="welcome-title">
+
+      <div class="hero-content">
+
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          YOUR WINDOW TO THE WORLD
+        </div>
+
+        <h1 id="welcome-title">
+          Every country.
+          <span class="gradient-text">
+            One adventure.
+          </span>
+        </h1>
+
+        <p class="hero-description">
+          Explore extraordinary places, discover fascinating
+          country facts, and compare destinations from
+          around the globe.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#explore" class="hero-primary-btn">
+            Explore Countries
+            <span aria-hidden="true">→</span>
+          </a>
+
+          <span class="hero-secondary-text">
+            🌐 Discover the world at your fingertips
+          </span>
+        </div>
+
+        <div class="hero-stats">
+
+          <div class="hero-stat">
+            <span class="stat-icon">🌎</span>
+
+            <div>
+              <strong id="total-countries">—</strong>
+              <span>Countries</span>
+            </div>
+          </div>
+
+          <div class="stat-divider"></div>
+
+          <div class="hero-stat">
+            <span class="stat-icon">🧭</span>
+
+            <div>
+              <strong id="total-regions">—</strong>
+              <span>Regions</span>
+            </div>
+          </div>
+
+          <div class="stat-divider"></div>
+
+          <div class="hero-stat">
+            <span class="stat-icon">❤️</span>
+
+            <div>
+              <strong id="total-favourites">0</strong>
+              <span>My Favourites</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hero-decoration" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="hero-globe">🌍</div>
+        <span class="floating-icon floating-one">✈️</span>
+        <span class="floating-icon floating-two">📍</span>
+        <span class="floating-icon floating-three">🧭</span>
+      </div>
+
+    </section>
+
+    <!-- EXPLORE COUNTRIES -->
+    <section
+      id="explore"
+      class="explore-section"
+      aria-labelledby="countries-title"
+    >
+
+      <div class="section-heading">
+
+        <div>
+          <span class="section-eyebrow">
+            DISCOVER DESTINATIONS
+          </span>
+
+          <h2 id="countries-title">
+            Explore <span>Countries</span>
+          </h2>
+
+          <p>
+            Find your next destination and uncover
+            what makes every country unique.
+          </p>
+        </div>
+
+        <div class="explore-heading-icon" aria-hidden="true">
+          🗺️
+        </div>
+
+      </div>
+
+      <!-- VIEW NAVIGATION -->
+      <div class="view-buttons" aria-label="Country views">
+
+        <button
+          type="button"
+          id="all-countries-btn"
+          class="view-btn active"
+        >
+          <span aria-hidden="true">🌐</span>
+          All Countries
+        </button>
+
+        <button
+          type="button"
+          id="favourites-btn"
+          class="view-btn"
+        >
+          <span aria-hidden="true">♥</span>
+          My Favourites
+        </button>
+
+        <button
+          type="button"
+          id="compare-view-btn"
+          class="view-btn"
+        >
+          <span aria-hidden="true">⚖️</span>
+          Compare Countries
+        </button>
+
+      </div>
+
+      <!-- SEARCH AND FILTER TOOLBAR -->
+      <div class="filters-toolbar">
+
+        <div class="search-container">
+
+          <label for="search-input">
+            Search Countries
+          </label>
+
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">⌕</span>
+
+            <input
+              type="search"
+              id="search-input"
+              placeholder="Search India, Japan, France..."
+              autocomplete="off"
+            >
+          </div>
+
+        </div>
+
+        <div class="filter-container">
+
+          <label for="region-filter">
+            Region
+          </label>
+
+          <select id="region-filter">
+            <option value="">All Regions</option>
+            <option value="Africa">Africa</option>
+            <option value="Americas">Americas</option>
+            <option value="Asia">Asia</option>
+            <option value="Europe">Europe</option>
+            <option value="Oceania">Oceania</option>
+            <option value="Antarctic">Antarctic</option>
+          </select>
+
+        </div>
+
+        <div class="sort-container">
+
+          <label for="sort-select">
+            Sort By
+          </label>
+
+          <select id="sort-select">
+            <option value="name">Name (A–Z)</option>
+            <option value="population-desc">
+              Population: High to Low
+            </option>
+            <option value="population-asc">
+              Population: Low to High
+            </option>
+            <option value="area-desc">
+              Area: Largest First
+            </option>
+            <option value="area-asc">
+              Area: Smallest First
+            </option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <!-- COUNTRY RESULTS HEADER -->
+      <div class="results-heading">
+
+        <div>
+          <h3>Countries Around the World</h3>
+
+          <p id="results-count" aria-live="polite">
+            Loading destinations...
+          </p>
+        </div>
+
+        <button
+          type="button"
+          id="refresh-btn"
+          class="refresh-btn"
+          title="Refresh country data"
+        >
+          <span aria-hidden="true">↻</span>
+          Refresh
+        </button>
+
+      </div>
+
+      <!-- COUNTRY CARDS -->
+      <div
+        id="countries-container"
+        class="countries-grid"
+        aria-live="polite"
+      >
+        <p class="status-message status-loading">
+          Loading countries...
+        </p>
+      </div>
+
+    </section>
+
+    <!-- COUNTRY DETAILS -->
+    <section
+      id="country-details"
+      class="details-section"
+      aria-labelledby="details-title"
+      hidden
+    >
+
+      <div class="details-wrapper">
+
+        <button
+          type="button"
+          id="back-btn"
+          class="back-btn"
+        >
+          ← Back to Countries
+        </button>
+
+        <div class="details-heading">
+          <span class="section-eyebrow">
+            COUNTRY SPOTLIGHT
+          </span>
+
+          <h2 id="details-title">
+            Discover a Country
+          </h2>
+
+          <p>
+            Explore detailed information about this destination.
+          </p>
+        </div>
+
+        <div id="details-container"></div>
+
+      </div>
+
+    </section>
+
+    <!-- COMPARE COUNTRIES -->
+    <section
+      id="compare-section"
+      class="compare-section"
+      aria-labelledby="compare-title"
+      hidden
+    >
+
+      <div class="compare-wrapper">
+
+        <button
+          type="button"
+          id="compare-back-btn"
+          class="back-btn"
+        >
+          ← Back to Countries
+        </button>
+
+        <div class="compare-heading">
+
+          <span class="section-eyebrow">
+            EXPLORE THE DIFFERENCES
+          </span>
+
+          <h2 id="compare-title">
+            Compare <span>Countries</span>
+          </h2>
+
+          <p>
+            Choose two of your favourite countries
+            and discover how they compare.
+          </p>
+
+        </div>
+
+        <!-- COUNTRY SELECTORS -->
+        <div class="compare-selectors">
+
+          <div class="compare-select-group">
+
+            <label for="compare-country-1">
+              🌍 First Country
+            </label>
+
+            <select id="compare-country-1">
+              <option value="">
+                Select first country
+              </option>
+            </select>
+
+          </div>
+
+          <div class="compare-versus" aria-hidden="true">
+            VS
+          </div>
+
+          <div class="compare-select-group">
+
+            <label for="compare-country-2">
+              🌎 Second Country
+            </label>
+
+            <select id="compare-country-2">
+              <option value="">
+                Select second country
+              </option>
+            </select>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          id="compare-btn"
+          class="compare-action-btn"
+        >
+          ⚖️ Compare Now
+        </button>
+
+        <!-- COMPARISON RESULTS -->
+        <div
+          id="compare-results"
+          aria-live="polite"
+        ></div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+
+    <div class="footer-content">
+
+      <div class="footer-brand">
+        <span>🌍</span>
+        <strong>World Explorer</strong>
+      </div>
+
+      <p>
+        Discover countries. Explore cultures.
+        Connect with the world.
+      </p>
+
+      <div class="footer-bottom">
+        <span>Milestone 2 · Full Stack + AI Engineering</span>
+        <span>Made for curious explorers ✨</span>
+      </div>
+
+    </div>
+
+  </footer>
+
+</body>
+</html>
