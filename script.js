@@ -31,13 +31,14 @@ const totalFavourites = document.getElementById("total-favourites");
 const resultsCount = document.getElementById("results-count");
 const refreshBtn = document.getElementById("refresh-btn");
 
+// SETTINGS
+const STORAGE_KEY = "worldExplorerFavourites";
+const SEARCH_DELAY_MS = 250;
+
 // APPLICATION STATE
 let allCountries = [];
 let currentView = "all";
 let loadState = "idle"; // idle | loading | ready | error
-
-const STORAGE_KEY = "worldExplorerFavourites";
-
 let favourites = [];
 
 try {
@@ -138,6 +139,16 @@ function scrollToSection(section) {
       : "smooth",
     block: "start"
   });
+}
+
+// Waits until the calls stop for `delay` ms, then runs `callback` once.
+function debounce(callback, delay) {
+  let timerId;
+
+  return () => {
+    clearTimeout(timerId);
+    timerId = setTimeout(callback, delay);
+  };
 }
 
 // SAVE FAVOURITES
@@ -681,7 +692,10 @@ function createComparisonCard(country) {
 }
 
 // EVENTS
-searchInput.addEventListener("input", applyFilters);
+searchInput.addEventListener(
+  "input",
+  debounce(applyFilters, SEARCH_DELAY_MS)
+);
 regionFilter.addEventListener("change", applyFilters);
 sortSelect.addEventListener("change", applyFilters);
 
