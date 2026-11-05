@@ -31,9 +31,14 @@ const totalFavourites = document.getElementById("total-favourites");
 const resultsCount = document.getElementById("results-count");
 const refreshBtn = document.getElementById("refresh-btn");
 
+const themeToggle = document.getElementById("theme-toggle");
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
 // SETTINGS
 const STORAGE_KEY = "worldExplorerFavourites";
+const THEME_KEY = "worldExplorerTheme";
 const SEARCH_DELAY_MS = 250;
+const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
 
 // APPLICATION STATE
 let allCountries = [];
@@ -149,6 +154,31 @@ function debounce(callback, delay) {
     clearTimeout(timerId);
     timerId = setTimeout(callback, delay);
   };
+}
+
+// THEME
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeColorMeta.content = THEME_COLORS[theme];
+
+  themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  themeToggle.setAttribute(
+    "aria-label",
+    `Switch to ${theme === "dark" ? "light" : "dark"} mode`
+  );
+}
+
+function toggleTheme() {
+  const nextTheme =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+
+  applyTheme(nextTheme);
+
+  try {
+    localStorage.setItem(THEME_KEY, nextTheme);
+  } catch (error) {
+    console.error("Unable to save theme:", error);
+  }
 }
 
 // SAVE FAVOURITES
@@ -700,6 +730,7 @@ regionFilter.addEventListener("change", applyFilters);
 sortSelect.addEventListener("change", applyFilters);
 
 refreshBtn.addEventListener("click", fetchCountries);
+themeToggle.addEventListener("click", toggleTheme);
 
 allCountriesBtn.addEventListener("click", () => {
   setActiveView("all");
@@ -811,5 +842,6 @@ compareBtn.addEventListener("click", () => {
 });
 
 // INITIAL LOAD
+applyTheme(document.documentElement.dataset.theme);
 updateStatistics();
 fetchCountries();

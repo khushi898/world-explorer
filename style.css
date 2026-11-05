@@ -4,6 +4,7 @@
 ========================================== */
 
 :root {
+  color-scheme: dark;
   --bg: #071421;
   --surface: #102337;
   --panel: #0e2032;
@@ -25,6 +26,31 @@
   --panel-gradient: linear-gradient(150deg, #122a40, #0c1e31);
   --hero-gradient: linear-gradient(100deg, #48e9d6, #75c4ff, #a7a0ff);
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f7fb;
+  --surface: #ffffff;
+  --panel: #e6eef5;
+  --inset: #edf3f8;
+  --button-bg: #ffffff;
+  --hover-bg: #d8e4ee;
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --footer-bg: #e6eef5;
+  --input-border: #b6c7d6;
+  --border: rgba(20, 50, 80, 0.16);
+  --text: #0f2233;
+  --soft-text: #33485c;
+  --muted: #4f6478;
+  --primary: #0a7d71;
+  --pink: #c2264f;
+  --favourite-text: #b01f46;
+  --chip-text: #0a6d63;
+  --card-gradient: linear-gradient(160deg, #ffffff, #f6f9fc);
+  --panel-gradient: linear-gradient(150deg, #ffffff, #f6f9fc);
+  --hero-gradient: linear-gradient(100deg, #0a8a7c, #1f6fd1, #5b4fd6);
+  --shadow: 0 16px 40px rgba(20, 50, 80, 0.1);
 }
 
 * {
@@ -169,6 +195,22 @@ img {
 
 .nav-explore:hover {
   background: rgba(53, 221, 203, 0.1);
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: var(--button-bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  font-size: 18px;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
 }
 
 /* ==========================================
