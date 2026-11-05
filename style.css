@@ -652,6 +652,7 @@ select option {
 ========================================== */
 
 .results-heading {
+  scroll-margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -898,8 +899,46 @@ select option {
   }
 }
 
-#load-more-sentinel {
-  height: 1px;
+/* ==========================================
+   PAGINATION
+========================================== */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 36px;
+}
+
+.page-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--button-bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--soft-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.page-btn:not(:disabled):hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.page-btn.active,
+.page-btn.active:not(:disabled):hover {
+  background: linear-gradient(135deg, #35ddcb, #63bdf6);
+  border-color: transparent;
+  color: #071421;
+}
+
+.page-gap {
+  padding: 0 4px;
+  color: var(--muted);
 }
 
 /* ==========================================
