@@ -10,7 +10,7 @@ A country discovery app built with vanilla JavaScript, with no frameworks or lib
 
 ## Features
 
-- **Browse:** every country as a card with its flag, name, capital, population and region
+- **Browse:** every country as a card with its flag, name, capital, population and region, split into pages of 24
 - **Search:** by common or official country name, debounced so the list only updates once typing pauses
 - **Filter and sort:** by region, and by name, population or area
 - **Country details:** currencies, languages, time zones, calling code, driving side and more, with Google Maps and OpenStreetMap links
@@ -36,8 +36,8 @@ GET https://pw-d20261017a29.plainwork-apps.workers.dev/v3.1/all?fields=name,flag
 
 | Requirement | Approach |
 | --- | --- |
-| Rendering 250 countries smoothly | Cards are added in batches of 40 as you scroll (`IntersectionObserver`), and flag images load lazily |
-| Event delegation | One click listener on the card grid handles details, favourite and retry buttons, and one on the details panel handles border chips |
+| Rendering 250 countries smoothly | Pagination builds only the 24 cards on the current page, and flag images load lazily |
+| Event delegation | One click listener on the card grid handles details, favourite and retry buttons, one on the pagination bar handles every page button, and one on the details panel handles border chips |
 | Async requests | `fetch` with `async/await` inside `try/catch`, and only one request can run at a time, so responses can't arrive out of order |
 | Favourites | An array of country codes stored as JSON in LocalStorage under `worldExplorerFavourites` |
 
@@ -58,6 +58,8 @@ GET https://pw-d20261017a29.plainwork-apps.workers.dev/v3.1/all?fields=name,flag
 | No results | Light mode |
 | --- | --- |
 | ![Empty state](screenshots/empty.png) | ![Light mode](screenshots/light-mode.png) |
+
+![Pagination](screenshots/pagination.png)
 
 <img src="screenshots/mobile.png" alt="Mobile view" width="280">
 
