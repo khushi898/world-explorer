@@ -64,7 +64,8 @@ try {
 }
 
 // REST COUNTRIES API
-// Keep the existing working API proxy.
+// restcountries.com retired v3.1, and its v5 API needs a private key.
+// Countrydrop is a free, no-key mirror of v3.1 with the same paths and JSON.
 const API_URL =
   "https://pw-d20261017a29.plainwork-apps.workers.dev/v3.1/all?fields=name,flags,capital,population,cca3,region,subregion,area,currencies,languages,borders,maps,timezones,idd,car,landlocked,independent,unMember,tld,continents";
 

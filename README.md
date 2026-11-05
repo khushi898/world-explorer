@@ -1,80 +1,91 @@
-🌍 World Explorer — Milestone 2
+# 🌍 World Explorer
 
-A modern, responsive country discovery website built using HTML, CSS and JavaScript. World Explorer allows users to explore countries worldwide, discover detailed country information, save favourite countries and compare destinations.
+A country discovery app built with vanilla JavaScript, with no frameworks or libraries. Browse all 250 countries, search and filter them, open a detailed profile, save favourites and compare two side by side.
 
-🚀 Features
+**Live demo:** https://world-explorer-zeta-ten.vercel.app
 
-* Explore Countries: Browse countries with their flags, capitals, populations and regions.
-* Live Search: Search countries by name.
-* Region Filtering: Filter countries by continent or region.
-* Sorting: Sort countries alphabetically, by population or by area.
-* Country Details: View official names, capitals, populations, languages, currencies, time zones, calling codes, driving sides and more.
-* Neighbouring Countries: Navigate between countries that share land borders.
-* Favourites: Add or remove favourite countries using LocalStorage.
-* Compare Countries: Compare two favourite countries side by side.
-* Refresh Data: Reload country information from the API.
-* Responsive Design: Optimised for desktop, tablet and mobile devices.
+**Milestone 2, Option C (World Explorer)** · Full Stack + AI Engineering Program
 
-🛠️ Technologies Used
+![World Explorer home page](screenshots/home.png)
 
-* HTML5
-* CSS3
-* JavaScript (ES6+)
-* REST Countries API
-* Fetch API and Async/Await
-* Browser LocalStorage
-* Git and GitHub
+## Features
 
-📁 Project Structure
+- **Browse:** every country as a card with its flag, name, capital, population and region
+- **Search:** by common or official country name, debounced so the list only updates once typing pauses
+- **Filter and sort:** by region, and by name, population or area
+- **Country details:** currencies, languages, time zones, calling code, driving side and more, with Google Maps and OpenStreetMap links
+- **Border chips:** click a neighbouring country to jump straight to its details
+- **Favourites:** saved in LocalStorage, so they survive a page refresh
+- **Compare:** view two favourites side by side
+- **Refresh:** re-fetches the data without reloading the page
+- **Loading, error and empty states:** skeleton cards, an error panel with a retry button, and a "no results" message
+- **Dark and light themes:** your choice is saved in LocalStorage
+- **Responsive:** works on mobile, tablet and desktop
 
+## API
+
+Country data comes from the [REST Countries](https://restcountries.com) dataset, using the v3.1 format.
+
+`restcountries.com` has retired its free v3.1 endpoints, and its v5 API requires a private key, which can't be kept secret in a frontend-only app. This project therefore uses **Countrydrop**, a free, no-key mirror with the same paths and JSON:
+
+```
+GET https://pw-d20261017a29.plainwork-apps.workers.dev/v3.1/all?fields=name,flags,capital,population,...
+```
+
+## How it works
+
+| Requirement | Approach |
+| --- | --- |
+| Rendering 250 countries smoothly | Cards are added in batches of 40 as you scroll (`IntersectionObserver`), and flag images load lazily |
+| Event delegation | One click listener on the card grid handles details, favourite and retry buttons, and one on the details panel handles border chips |
+| Async requests | `fetch` with `async/await` inside `try/catch`, and only one request can run at a time, so responses can't arrive out of order |
+| Favourites | An array of country codes stored as JSON in LocalStorage under `worldExplorerFavourites` |
+
+## Screenshots
+
+| Browse | Country details |
+| --- | --- |
+| ![Browse view](screenshots/browse.png) | ![Country details](screenshots/details.png) |
+
+| Border chips and map links | Compare favourites |
+| --- | --- |
+| ![Border chips and map links](screenshots/borders.png) | ![Compare view](screenshots/compare.png) |
+
+| Loading | Error (offline) |
+| --- | --- |
+| ![Skeleton loaders](screenshots/loading.png) | ![Error state](screenshots/error.png) |
+
+| No results | Light mode |
+| --- | --- |
+| ![Empty state](screenshots/empty.png) | ![Light mode](screenshots/light-mode.png) |
+
+<img src="screenshots/mobile.png" alt="Mobile view" width="280">
+
+## Tech stack
+
+HTML5 · CSS3 (custom properties, Grid, Flexbox) · JavaScript (ES6+) · Fetch API · LocalStorage · Vercel
+
+## Project structure
+
+```
 world-explorer/
-├── index.html
-├── style.css
-├── script.js
+├── index.html      Page structure
+├── style.css       Styles, themes and responsive layout
+├── script.js       Data fetching, rendering and interactions
+├── screenshots/    Images used in this README
 └── README.md
+```
 
-⚙️ How to Run Locally
+## Run locally
 
-1. Clone the repository:
-    git clone https://github.com/khushi898/world-explorer.git
-2. Open the world-explorer folder in Visual Studio Code.
-3. Open index.html using the Live Server extension.
-4. Explore countries, save favourites and compare destinations.
+```bash
+git clone https://github.com/khushi898/world-explorer.git
+```
 
-No additional packages or installation are required.
+Open the `world-explorer` folder in VS Code and open `index.html` with the Live Server extension. There is nothing to install.
 
-🌐 API Integration
+## Author
 
-World Explorer uses the REST Countries API through a working API proxy to retrieve country information.
-
-The website dynamically displays country data and includes loading and error-handling states.
-
-💾 LocalStorage
-
-Favourite countries are saved in the browser’s LocalStorage, allowing users to retain their selections after refreshing the page.
-
-📱 Responsive Design
-
-The interface features a dark navy and turquoise theme, responsive country cards, mobile-friendly navigation, detailed country profiles and comparison layouts.
-
-🔮 Future Improvements
-
-* Country search suggestions
-* Dark and light theme switching
-* Interactive world map
-* Additional country statistics
-* More advanced country comparisons
-
-👩‍💻 Project Information
-
-Project: World Explorer
-
-Milestone: 2
-
-Developer: Khushi Patel
-
-GitHub: https://github.com/khushi898/world-explorer
-
-📄 Licence
+Khushi Patel · [GitHub](https://github.com/khushi898/world-explorer)
 
 Created as an educational portfolio project.
