@@ -990,6 +990,10 @@ select option {
   font-weight: 800;
 }
 
+.map-link {
+  transition: transform 0.25s;
+}
+
 .map-link:hover {
   transform: translateY(-2px);
 }
@@ -1555,6 +1559,13 @@ select option {
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+button:not(:disabled):active,
+.hero-primary-btn:active,
+.nav-explore:active,
+.map-link:active {
+  transform: scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
