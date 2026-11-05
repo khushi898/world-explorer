@@ -22,6 +22,8 @@
   --pink: #ff829e;
   --favourite-text: #ff9fb4;
   --chip-text: #85f5e7;
+  --error: #ff9eae;
+  --error-bg: rgba(255, 90, 120, 0.09);
   --skeleton-base: #162e45;
   --skeleton-shine: #24435f;
   --card-gradient: linear-gradient(160deg, #152b40, #0d2033);
@@ -49,6 +51,8 @@
   --pink: #c2264f;
   --favourite-text: #b01f46;
   --chip-text: #0a6d63;
+  --error: #b3182f;
+  --error-bg: rgba(200, 30, 60, 0.07);
   --skeleton-base: #e0e9f0;
   --skeleton-shine: #f3f7fa;
   --card-gradient: linear-gradient(160deg, #ffffff, #f6f9fc);
@@ -803,17 +807,38 @@ select option {
   padding: 45px 25px;
   text-align: center;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px dashed var(--input-border);
   border-radius: 17px;
   color: var(--muted);
 }
 
-.status-loading {
-  color: var(--primary);
+.status-icon {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 34px;
+  line-height: 1.2;
 }
 
 .status-error {
-  color: #ff9eae;
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  color: var(--error);
+  font-weight: 700;
+}
+
+.retry-btn {
+  margin-top: 18px;
+  padding: 11px 22px;
+  background: var(--error);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
 }
 
 /* Skeleton loaders */

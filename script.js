@@ -39,6 +39,7 @@ const STORAGE_KEY = "worldExplorerFavourites";
 const THEME_KEY = "worldExplorerTheme";
 const SKELETON_CARD_COUNT = 8;
 const SEARCH_DELAY_MS = 250;
+const STATUS_ICONS = { error: "⚠️", empty: "🔍" };
 const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
 
 // APPLICATION STATE
@@ -226,14 +227,23 @@ function showSkeletons() {
   }
 }
 
-function showStatus(message, type = "info") {
+function showStatus(message, type) {
   countriesContainer.replaceChildren();
 
-  const status = makeElement(
-    "p",
-    `status-message status-${type}`,
-    message
+  const status = makeElement("div", `status-message status-${type}`);
+
+  status.append(
+    makeElement("span", "status-icon", STATUS_ICONS[type]),
+    makeElement("p", "", message)
   );
+
+  if (type === "error") {
+    status.setAttribute("role", "alert");
+
+    const retryButton = makeElement("button", "retry-btn", "↻ Try Again");
+    retryButton.type = "button";
+    status.appendChild(retryButton);
+  }
 
   countriesContainer.appendChild(status);
 }
@@ -397,12 +407,7 @@ function displayCountries(countries) {
     } found`;
 
   if (countries.length === 0) {
-    showStatus(
-      currentView === "favourites"
-        ? "No favourite countries match your filters. Add countries to your favourites to see them here."
-        : "No countries found. Try a different search or region.",
-      "empty"
-    );
+    showStatus(getEmptyMessage(), "empty");
     return;
   }
 
@@ -414,6 +419,16 @@ function displayCountries(countries) {
 
   countriesContainer.replaceChildren();
   countriesContainer.appendChild(fragment);
+}
+
+function getEmptyMessage() {
+  if (currentView !== "favourites") {
+    return "No countries found. Try a different search or region.";
+  }
+
+  return favourites.length === 0
+    ? "You have no favourites yet. Add a country from All Countries to see it here."
+    : "No favourite countries match your search or region.";
 }
 
 // SEARCH, FILTER AND SORT
@@ -787,7 +802,7 @@ compareViewBtn.addEventListener("click", () => {
   setActiveView("compare");
 });
 
-// CARD ACTIONS (one delegated listener handles every card)
+// CARD ACTIONS (one delegated listener handles every card and the retry button)
 countriesContainer.addEventListener("click", (event) => {
   const detailsButton = event.target.closest(".details-btn");
 
@@ -800,6 +815,11 @@ countriesContainer.addEventListener("click", (event) => {
 
   if (favouriteButton) {
     toggleFavourite(favouriteButton);
+    return;
+  }
+
+  if (event.target.closest(".retry-btn")) {
+    fetchCountries();
   }
 });
 
