@@ -5,7 +5,8 @@
 
 // DOM ELEMENTS
 const countriesContainer = document.getElementById("countries-container");
-const loadMoreSentinel = document.getElementById("load-more-sentinel");
+const pagination = document.getElementById("pagination");
+const resultsHeading = document.querySelector(".results-heading");
 const searchInput = document.getElementById("search-input");
 const regionFilter = document.getElementById("region-filter");
 const sortSelect = document.getElementById("sort-select");
@@ -38,7 +39,7 @@ const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 // SETTINGS
 const STORAGE_KEY = "worldExplorerFavourites";
 const THEME_KEY = "worldExplorerTheme";
-const CARDS_PER_BATCH = 40;
+const CARDS_PER_PAGE = 24;
 const SKELETON_CARD_COUNT = 8;
 const SEARCH_DELAY_MS = 250;
 const STATUS_ICONS = { error: "⚠️", empty: "🔍" };
@@ -48,8 +49,7 @@ const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
 let allCountries = [];
 let currentView = "all";
 let loadState = "idle"; // idle | loading | ready | error
-let visibleCountries = [];
-let renderedCount = 0;
+let currentPage = 1;
 let listScrollPosition = 0;
 let favourites = [];
 
@@ -215,9 +215,8 @@ function updateStatistics() {
 
 // LIST STATES
 function clearCountryList() {
-  visibleCountries = [];
-  renderedCount = 0;
   countriesContainer.replaceChildren();
+  pagination.replaceChildren();
 }
 
 function showSkeletons() {
@@ -412,23 +411,69 @@ function createCountryCard(country) {
   return card;
 }
 
-// RENDER COUNTRIES IN BATCHES
-// Adding 250 cards at once is slow, so cards are added as the user scrolls.
-function renderNextBatch() {
-  const batch = visibleCountries.slice(
-    renderedCount,
-    renderedCount + CARDS_PER_BATCH
-  );
+// PAGINATION
+function createPageButton(label, page, ariaLabel) {
+  const button = makeElement("button", "page-btn", label);
 
-  if (batch.length === 0) return;
+  button.type = "button";
+  button.dataset.page = page;
+  button.setAttribute("aria-label", ariaLabel);
 
-  countriesContainer.append(
-    ...batch.map((country) => createCountryCard(country))
-  );
-
-  renderedCount += batch.length;
+  return button;
 }
 
+// Always shows the first page, the last page and the pages next to the current one.
+function getVisiblePages(totalPages) {
+  return Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+    (page) =>
+      page === 1 ||
+      page === totalPages ||
+      Math.abs(page - currentPage) <= 1
+  );
+}
+
+function renderPagination(totalPages) {
+  if (totalPages <= 1) return;
+
+  const previousButton = createPageButton(
+    "← Previous",
+    currentPage - 1,
+    "Go to previous page"
+  );
+
+  previousButton.disabled = currentPage === 1;
+  pagination.appendChild(previousButton);
+
+  getVisiblePages(totalPages).forEach((page, index, pages) => {
+    if (index > 0 && page - pages[index - 1] > 1) {
+      pagination.appendChild(makeElement("span", "page-gap", "…"));
+    }
+
+    const pageButton = createPageButton(
+      String(page),
+      page,
+      `Go to page ${page}`
+    );
+
+    if (page === currentPage) {
+      pageButton.classList.add("active");
+      pageButton.setAttribute("aria-current", "page");
+    }
+
+    pagination.appendChild(pageButton);
+  });
+
+  const nextButton = createPageButton(
+    "Next →",
+    currentPage + 1,
+    "Go to next page"
+  );
+
+  nextButton.disabled = currentPage === totalPages;
+  pagination.appendChild(nextButton);
+}
+
+// DISPLAY THE CURRENT PAGE OF COUNTRIES
 function displayCountries(countries) {
   resultsCount.textContent =
     `${formatNumber(countries.length)} ${
@@ -440,9 +485,29 @@ function displayCountries(countries) {
     return;
   }
 
+  const totalPages = Math.ceil(countries.length / CARDS_PER_PAGE);
+
+  // The list can shrink, for example when removing the last favourite on a page.
+  currentPage = Math.min(currentPage, totalPages);
+
+  const startIndex = (currentPage - 1) * CARDS_PER_PAGE;
+  const pageCountries = countries.slice(
+    startIndex,
+    startIndex + CARDS_PER_PAGE
+  );
+
+  if (totalPages > 1) {
+    resultsCount.textContent +=
+      ` · showing ${startIndex + 1}–${startIndex + pageCountries.length}`;
+  }
+
   clearCountryList();
-  visibleCountries = countries;
-  renderNextBatch();
+
+  countriesContainer.append(
+    ...pageCountries.map((country) => createCountryCard(country))
+  );
+
+  renderPagination(totalPages);
 }
 
 function getEmptyMessage() {
@@ -504,6 +569,12 @@ function applyFilters() {
   displayCountries(filteredCountries);
 }
 
+// A new search, filter, sort or view starts again from page 1.
+function applyFiltersFromFirstPage() {
+  currentPage = 1;
+  applyFilters();
+}
+
 // VIEW NAVIGATION
 function setActiveView(view) {
   currentView = view;
@@ -520,7 +591,7 @@ function setActiveView(view) {
     populateCompareDropdowns();
     scrollToSection(compareSection);
   } else {
-    applyFilters();
+    applyFiltersFromFirstPage();
     scrollToSection(countriesSection);
   }
 }
@@ -811,10 +882,10 @@ function createComparisonCard(country) {
 // EVENTS
 searchInput.addEventListener(
   "input",
-  debounce(applyFilters, SEARCH_DELAY_MS)
+  debounce(applyFiltersFromFirstPage, SEARCH_DELAY_MS)
 );
-regionFilter.addEventListener("change", applyFilters);
-sortSelect.addEventListener("change", applyFilters);
+regionFilter.addEventListener("change", applyFiltersFromFirstPage);
+sortSelect.addEventListener("change", applyFiltersFromFirstPage);
 
 refreshBtn.addEventListener("click", fetchCountries);
 themeToggle.addEventListener("click", toggleTheme);
@@ -849,6 +920,17 @@ countriesContainer.addEventListener("click", (event) => {
 
   if (event.target.closest(".retry-btn")) {
     fetchCountries();
+  }
+});
+
+// PAGE BUTTONS (one delegated listener handles every page button)
+pagination.addEventListener("click", (event) => {
+  const button = event.target.closest(".page-btn");
+
+  if (button) {
+    currentPage = Number(button.dataset.page);
+    applyFilters();
+    scrollToSection(resultsHeading);
   }
 });
 
@@ -917,16 +999,6 @@ compareBtn.addEventListener("click", () => {
 
   compareResults.appendChild(grid);
 });
-
-// LOAD MORE CARDS WHEN THE USER NEARS THE END OF THE LIST
-const loadMoreObserver = new IntersectionObserver(
-  (entries) => {
-    if (entries[0].isIntersecting) renderNextBatch();
-  },
-  { rootMargin: "600px" }
-);
-
-loadMoreObserver.observe(loadMoreSentinel);
 
 // INITIAL LOAD
 applyTheme(document.documentElement.dataset.theme);
