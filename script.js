@@ -365,7 +365,6 @@ function setActiveView(view) {
 
   if (view === "compare") {
     populateCompareDropdowns();
-    compareResults.replaceChildren();
     scrollToSection(compareSection);
   } else {
     applyFilters();
@@ -578,9 +577,16 @@ function showCountryDetails(countryCode) {
 function populateCompareDropdowns() {
   compareCountry1.replaceChildren();
   compareCountry2.replaceChildren();
+  compareResults.replaceChildren();
 
   compareCountry1.add(new Option("Select first country", ""));
   compareCountry2.add(new Option("Select second country", ""));
+
+  if (allCountries.length === 0) {
+    compareResults.textContent =
+      "Country data has not loaded yet. Go back and try refreshing.";
+    return;
+  }
 
   const favouriteCountries = allCountries.filter(
     (country) => favourites.includes(country.cca3)
