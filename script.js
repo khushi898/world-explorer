@@ -50,6 +50,7 @@ let currentView = "all";
 let loadState = "idle"; // idle | loading | ready | error
 let visibleCountries = [];
 let renderedCount = 0;
+let listScrollPosition = 0;
 let favourites = [];
 
 try {
@@ -576,6 +577,11 @@ function showCountryDetails(countryCode) {
 
   if (!country) return;
 
+  // Remember where the user was, unless they arrived from a border chip.
+  if (!countriesSection.hidden) {
+    listScrollPosition = window.scrollY;
+  }
+
   detailsContainer.replaceChildren();
 
   // Profile header
@@ -860,7 +866,7 @@ backBtn.addEventListener("click", () => {
   countriesSection.hidden = false;
   compareSection.hidden = true;
 
-  scrollToSection(countriesSection);
+  window.scrollTo({ top: listScrollPosition, behavior: "instant" });
 });
 
 // BACK FROM COMPARISON
