@@ -1,21 +1,64 @@
 /* ==========================================
    WORLD EXPLORER
-   PREMIUM RESPONSIVE DESIGN
+   RESPONSIVE DESIGN
 ========================================== */
 
 :root {
+  color-scheme: dark;
   --bg: #071421;
-  --bg-soft: #0b1b2c;
   --surface: #102337;
-  --surface-hover: #162e46;
+  --panel: #0e2032;
+  --inset: #091929;
+  --button-bg: #152d43;
+  --hover-bg: #1a344c;
+  --header-bg: rgba(7, 20, 33, 0.88);
+  --footer-bg: #06111d;
+  --input-border: #29425a;
   --border: rgba(165, 196, 222, 0.15);
   --text: #f3f8ff;
+  --soft-text: #c7d8e7;
   --muted: #9cb0c5;
   --primary: #35ddcb;
-  --blue: #62a5ff;
   --pink: #ff829e;
+  --favourite-text: #ff9fb4;
+  --chip-text: #85f5e7;
+  --error: #ff9eae;
+  --error-bg: rgba(255, 90, 120, 0.09);
+  --skeleton-base: #162e45;
+  --skeleton-shine: #24435f;
+  --card-gradient: linear-gradient(160deg, #152b40, #0d2033);
+  --panel-gradient: linear-gradient(150deg, #122a40, #0c1e31);
+  --hero-gradient: linear-gradient(100deg, #48e9d6, #75c4ff, #a7a0ff);
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
-  --radius: 20px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f7fb;
+  --surface: #ffffff;
+  --panel: #e6eef5;
+  --inset: #edf3f8;
+  --button-bg: #ffffff;
+  --hover-bg: #d8e4ee;
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --footer-bg: #e6eef5;
+  --input-border: #b6c7d6;
+  --border: rgba(20, 50, 80, 0.16);
+  --text: #0f2233;
+  --soft-text: #33485c;
+  --muted: #4f6478;
+  --primary: #0a7d71;
+  --pink: #c2264f;
+  --favourite-text: #b01f46;
+  --chip-text: #0a6d63;
+  --error: #b3182f;
+  --error-bg: rgba(200, 30, 60, 0.07);
+  --skeleton-base: #e0e9f0;
+  --skeleton-shine: #f3f7fa;
+  --card-gradient: linear-gradient(160deg, #ffffff, #f6f9fc);
+  --panel-gradient: linear-gradient(150deg, #ffffff, #f6f9fc);
+  --hero-gradient: linear-gradient(100deg, #0a8a7c, #1f6fd1, #5b4fd6);
+  --shadow: 0 16px 40px rgba(20, 50, 80, 0.1);
 }
 
 * {
@@ -99,7 +142,7 @@ img {
 .site-header {
   position: relative;
   z-index: 10;
-  background: rgba(7, 20, 33, 0.88);
+  background: var(--header-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(18px);
 }
@@ -160,6 +203,22 @@ img {
 
 .nav-explore:hover {
   background: rgba(53, 221, 203, 0.1);
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: var(--button-bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  font-size: 18px;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
 }
 
 /* ==========================================
@@ -225,12 +284,7 @@ main {
 
 .gradient-text {
   display: block;
-  background: linear-gradient(
-    100deg,
-    #48e9d6,
-    #75c4ff,
-    #a7a0ff
-  );
+  background: var(--hero-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -371,7 +425,7 @@ main {
   place-items: center;
   width: 55px;
   height: 55px;
-  background: #142c43;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 17px;
   font-size: 25px;
@@ -472,7 +526,7 @@ main {
   max-width: 100%;
   padding: 6px;
   margin: 5px 0 27px;
-  background: #0e2032;
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 15px;
 }
@@ -487,15 +541,15 @@ main {
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #b4c6d8;
+  color: var(--soft-text);
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .view-btn:hover {
-  background: #1a344c;
-  color: white;
+  background: var(--hover-bg);
+  color: var(--text);
 }
 
 .view-btn.active {
@@ -515,7 +569,7 @@ main {
   gap: 18px;
   padding: 23px;
   margin-bottom: 30px;
-  background: linear-gradient(145deg, #102438, #0d1d30);
+  background: var(--panel-gradient);
   border: 1px solid var(--border);
   border-radius: 19px;
   box-shadow: var(--shadow);
@@ -531,7 +585,7 @@ main {
 }
 
 .filters-toolbar label {
-  color: #c7d8e7;
+  color: var(--soft-text);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -564,8 +618,8 @@ main {
   padding: 0 15px;
   margin: 0;
   flex: none;
-  background: #091929;
-  border: 1px solid #29425a;
+  background: var(--inset);
+  border: 1px solid var(--input-border);
   border-radius: 11px;
   color: var(--text);
   font-size: 13px;
@@ -578,7 +632,7 @@ main {
 }
 
 #search-input::placeholder {
-  color: #7d95aa;
+  color: var(--muted);
 }
 
 #search-input:focus,
@@ -589,8 +643,8 @@ main {
 }
 
 select option {
-  background: #102337;
-  color: white;
+  background: var(--surface);
+  color: var(--text);
 }
 
 /* ==========================================
@@ -622,10 +676,10 @@ select option {
   align-items: center;
   gap: 9px;
   padding: 11px 17px;
-  background: #152d43;
+  background: var(--button-bg);
   border: 1px solid var(--border);
   border-radius: 11px;
-  color: #d5e6f4;
+  color: var(--soft-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -639,8 +693,7 @@ select option {
    COUNTRY GRID
 ========================================== */
 
-.countries-grid,
-#countries-container {
+.countries-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 22px;
@@ -652,7 +705,7 @@ select option {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  background: linear-gradient(160deg, #152b40, #0d2033);
+  background: var(--card-gradient);
   border: 1px solid var(--border);
   border-radius: 19px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
@@ -680,7 +733,7 @@ select option {
       rgba(98, 165, 255, 0.11),
       transparent 75%
     ),
-    #091929;
+    var(--inset);
   border-bottom: 1px solid var(--border);
 }
 
@@ -693,7 +746,7 @@ select option {
 
 .country-card h3 {
   margin-bottom: 13px;
-  color: white;
+  color: var(--text);
   font-size: 21px;
   font-weight: 800;
   overflow-wrap: anywhere;
@@ -735,7 +788,7 @@ select option {
 
 .favourite-btn {
   background: rgba(255, 130, 158, 0.07);
-  color: #ff9fb4;
+  color: var(--favourite-text);
   border: 1px solid rgba(255, 130, 158, 0.3);
 }
 
@@ -754,17 +807,99 @@ select option {
   padding: 45px 25px;
   text-align: center;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px dashed var(--input-border);
   border-radius: 17px;
   color: var(--muted);
 }
 
-.status-loading {
-  color: var(--primary);
+.status-icon {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 34px;
+  line-height: 1.2;
 }
 
 .status-error {
-  color: #ff9eae;
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  color: var(--error);
+  font-weight: 700;
+}
+
+.retry-btn {
+  margin-top: 18px;
+  padding: 11px 22px;
+  background: var(--error);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Skeleton loaders */
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding-bottom: 21px;
+  overflow: hidden;
+  background: var(--card-gradient);
+  border: 1px solid var(--border);
+  border-radius: 19px;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-shine) 50%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeleton-flag {
+  height: 165px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line {
+  width: 70%;
+  height: 13px;
+  margin: 0 21px;
+  border-radius: 6px;
+}
+
+.skeleton-title {
+  width: 55%;
+  height: 22px;
+}
+
+.skeleton-button {
+  width: calc(100% - 42px);
+  height: 43px;
+  margin-top: 12px;
+  border-radius: 10px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+#load-more-sentinel {
+  height: 1px;
 }
 
 /* ==========================================
@@ -788,10 +923,10 @@ select option {
   gap: 8px;
   margin-bottom: 30px;
   padding: 12px 20px;
-  background: #152d43;
+  background: var(--button-bg);
   border: 1px solid var(--border);
   border-radius: 11px;
-  color: white;
+  color: var(--text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -813,7 +948,7 @@ select option {
 
 #details-container {
   padding: 35px;
-  background: linear-gradient(150deg, #132a40, #0c1e31);
+  background: var(--panel-gradient);
   border: 1px solid var(--border);
   border-radius: 23px;
   box-shadow: var(--shadow);
@@ -832,20 +967,9 @@ select option {
   padding: 15px;
   object-fit: contain;
   margin-bottom: 25px;
-  background: #091929;
+  background: var(--inset);
   border: 1px solid var(--border);
   border-radius: 15px;
-}
-
-#details-container > p {
-  padding: 13px 0;
-  color: #bfd0e0;
-  border-bottom: 1px solid var(--border);
-  overflow-wrap: anywhere;
-}
-
-#details-container strong {
-  color: white;
 }
 
 #details-container h4 {
@@ -860,10 +984,14 @@ select option {
   margin-top: 25px;
   padding: 13px 21px;
   border-radius: 11px;
-  background: linear-gradient(135deg, #377bff, #43c2ee);
-  color: white;
+  background: linear-gradient(135deg, #1f63e0, #1b86c4);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 800;
+}
+
+.map-link {
+  transition: transform 0.25s;
 }
 
 .map-link:hover {
@@ -882,7 +1010,7 @@ select option {
   background: rgba(53, 221, 203, 0.09);
   border: 1px solid rgba(53, 221, 203, 0.3);
   border-radius: 10px;
-  color: #85f5e7;
+  color: var(--chip-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -931,7 +1059,7 @@ select option {
 .country-info-card {
   min-width: 0;
   padding: 20px;
-  background: #0c2033;
+  background: var(--inset);
   border: 1px solid var(--border);
   border-radius: 15px;
 }
@@ -944,7 +1072,7 @@ select option {
 }
 
 .country-info-value {
-  color: white;
+  color: var(--text);
   font-size: 16px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -996,7 +1124,7 @@ select option {
 .compare-select-group label {
   display: block;
   margin-bottom: 10px;
-  color: #c7d8e7;
+  color: var(--soft-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1006,10 +1134,10 @@ select option {
   min-width: 0;
   height: 50px;
   padding: 0 15px;
-  background: #091929;
-  border: 1px solid #29425a;
+  background: var(--inset);
+  border: 1px solid var(--input-border);
   border-radius: 11px;
-  color: white;
+  color: var(--text);
   font-size: 13px;
 }
 
@@ -1058,7 +1186,7 @@ select option {
 .comparison-card {
   min-width: 0;
   padding: 28px;
-  background: linear-gradient(150deg, #162e45, #0d2033);
+  background: var(--card-gradient);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow);
@@ -1067,7 +1195,7 @@ select option {
 .comparison-card h3 {
   margin-bottom: 20px;
   text-align: center;
-  color: white;
+  color: var(--text);
   font-size: 27px;
   overflow-wrap: anywhere;
 }
@@ -1080,14 +1208,14 @@ select option {
   padding: 14px;
   margin: 0 auto 25px;
   object-fit: contain;
-  background: #091929;
+  background: var(--inset);
   border: 1px solid var(--border);
   border-radius: 13px;
 }
 
 .comparison-card p {
   padding: 12px 0;
-  color: #bfd0e0;
+  color: var(--soft-text);
   border-bottom: 1px solid var(--border);
   font-size: 14px;
   overflow-wrap: anywhere;
@@ -1098,7 +1226,7 @@ select option {
 }
 
 .comparison-card strong {
-  color: white;
+  color: var(--text);
 }
 
 /* ==========================================
@@ -1106,7 +1234,7 @@ select option {
 ========================================== */
 
 .site-footer {
-  background: #06111d;
+  background: var(--footer-bg);
   border-top: 1px solid var(--border);
 }
 
@@ -1138,7 +1266,7 @@ select option {
   margin-top: 30px;
   padding-top: 20px;
   border-top: 1px solid var(--border);
-  color: #8096aa;
+  color: var(--muted);
   font-size: 12px;
 }
 
@@ -1147,8 +1275,7 @@ select option {
 ========================================== */
 
 @media (max-width: 1100px) {
-  .countries-grid,
-  #countries-container {
+  .countries-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -1182,8 +1309,7 @@ select option {
     font-size: 180px;
   }
 
-  .countries-grid,
-  #countries-container {
+  .countries-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1334,8 +1460,7 @@ select option {
     max-height: 48px;
   }
 
-  .countries-grid,
-  #countries-container {
+  .countries-grid {
     grid-template-columns: 1fr;
     gap: 18px;
   }
@@ -1434,6 +1559,13 @@ select option {
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+button:not(:disabled):active,
+.hero-primary-btn:active,
+.nav-explore:active,
+.map-link:active {
+  transform: scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {

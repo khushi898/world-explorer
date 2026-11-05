@@ -5,6 +5,7 @@
 
 // DOM ELEMENTS
 const countriesContainer = document.getElementById("countries-container");
+const loadMoreSentinel = document.getElementById("load-more-sentinel");
 const searchInput = document.getElementById("search-input");
 const regionFilter = document.getElementById("region-filter");
 const sortSelect = document.getElementById("sort-select");
@@ -31,13 +32,25 @@ const totalFavourites = document.getElementById("total-favourites");
 const resultsCount = document.getElementById("results-count");
 const refreshBtn = document.getElementById("refresh-btn");
 
+const themeToggle = document.getElementById("theme-toggle");
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+// SETTINGS
+const STORAGE_KEY = "worldExplorerFavourites";
+const THEME_KEY = "worldExplorerTheme";
+const CARDS_PER_BATCH = 40;
+const SKELETON_CARD_COUNT = 8;
+const SEARCH_DELAY_MS = 250;
+const STATUS_ICONS = { error: "⚠️", empty: "🔍" };
+const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
+
 // APPLICATION STATE
 let allCountries = [];
 let currentView = "all";
-let isLoading = false;
-
-const STORAGE_KEY = "worldExplorerFavourites";
-
+let loadState = "idle"; // idle | loading | ready | error
+let visibleCountries = [];
+let renderedCount = 0;
+let listScrollPosition = 0;
 let favourites = [];
 
 try {
@@ -51,7 +64,8 @@ try {
 }
 
 // REST COUNTRIES API
-// Keep the existing working API proxy.
+// restcountries.com retired v3.1, and its v5 API needs a private key.
+// Countrydrop is a free, no-key mirror of v3.1 with the same paths and JSON.
 const API_URL =
   "https://pw-d20261017a29.plainwork-apps.workers.dev/v3.1/all?fields=name,flags,capital,population,cca3,region,subregion,area,currencies,languages,borders,maps,timezones,idd,car,landlocked,independent,unMember,tld,continents";
 
@@ -66,6 +80,18 @@ function formatList(values) {
   return Array.isArray(values) && values.length
     ? values.join(", ")
     : "N/A";
+}
+
+function formatArea(area) {
+  return area != null
+    ? `${formatNumber(area)} km²`
+    : "N/A";
+}
+
+function formatYesNo(value) {
+  if (typeof value !== "boolean") return "N/A";
+
+  return value ? "Yes" : "No";
 }
 
 function getCurrencyNames(country) {
@@ -98,6 +124,14 @@ function getCallingCode(country) {
   return suffixes.map((suffix) => `${root}${suffix}`).join(", ");
 }
 
+function getDrivingSide(country) {
+  const side = country.car?.side;
+
+  return side
+    ? side.charAt(0).toUpperCase() + side.slice(1)
+    : "N/A";
+}
+
 function getFlag(country) {
   return country.flags?.svg || country.flags?.png || "";
 }
@@ -118,6 +152,41 @@ function scrollToSection(section) {
       : "smooth",
     block: "start"
   });
+}
+
+// Waits until the calls stop for `delay` ms, then runs `callback` once.
+function debounce(callback, delay) {
+  let timerId;
+
+  return () => {
+    clearTimeout(timerId);
+    timerId = setTimeout(callback, delay);
+  };
+}
+
+// THEME
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeColorMeta.content = THEME_COLORS[theme];
+
+  themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  themeToggle.setAttribute(
+    "aria-label",
+    `Switch to ${theme === "dark" ? "light" : "dark"} mode`
+  );
+}
+
+function toggleTheme() {
+  const nextTheme =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+
+  applyTheme(nextTheme);
+
+  try {
+    localStorage.setItem(THEME_KEY, nextTheme);
+  } catch (error) {
+    console.error("Unable to save theme:", error);
+  }
 }
 
 // SAVE FAVOURITES
@@ -144,28 +213,63 @@ function updateStatistics() {
   totalFavourites.textContent = favourites.length;
 }
 
-// STATUS MESSAGES
-function showStatus(message, type = "info") {
+// LIST STATES
+function clearCountryList() {
+  visibleCountries = [];
+  renderedCount = 0;
   countriesContainer.replaceChildren();
+}
 
-  const status = makeElement(
-    "p",
-    `status-message status-${type}`,
-    message
+function showSkeletons() {
+  clearCountryList();
+
+  for (let i = 0; i < SKELETON_CARD_COUNT; i++) {
+    const card = makeElement("div", "skeleton-card");
+    card.setAttribute("aria-hidden", "true");
+
+    card.append(
+      makeElement("div", "skeleton skeleton-flag"),
+      makeElement("div", "skeleton skeleton-line skeleton-title"),
+      makeElement("div", "skeleton skeleton-line"),
+      makeElement("div", "skeleton skeleton-line"),
+      makeElement("div", "skeleton skeleton-line skeleton-button")
+    );
+
+    countriesContainer.appendChild(card);
+  }
+}
+
+function showStatus(message, type) {
+  clearCountryList();
+
+  const status = makeElement("div", `status-message status-${type}`);
+
+  status.append(
+    makeElement("span", "status-icon", STATUS_ICONS[type]),
+    makeElement("p", "", message)
   );
+
+  if (type === "error") {
+    status.setAttribute("role", "alert");
+
+    const retryButton = makeElement("button", "retry-btn", "↻ Try Again");
+    retryButton.type = "button";
+    status.appendChild(retryButton);
+  }
 
   countriesContainer.appendChild(status);
 }
 
 // FETCH COUNTRIES
 async function fetchCountries() {
-  if (isLoading) return;
+  // Only one request runs at a time, so responses can never arrive out of order.
+  if (loadState === "loading") return;
 
-  isLoading = true;
+  loadState = "loading";
   refreshBtn.disabled = true;
   refreshBtn.textContent = "↻ Refreshing...";
 
-  showStatus("Loading countries...", "loading");
+  showSkeletons();
   resultsCount.textContent = "Loading destinations...";
 
   try {
@@ -189,11 +293,18 @@ async function fetchCountries() {
         a.name.common.localeCompare(b.name.common)
       );
 
+    loadState = "ready";
     updateStatistics();
     applyFilters();
 
+    if (currentView === "compare") {
+      populateCompareDropdowns();
+    }
+
   } catch (error) {
     console.error("Country API error:", error);
+
+    loadState = "error";
 
     showStatus(
       "Unable to load countries. Please check your connection and try again.",
@@ -202,111 +313,153 @@ async function fetchCountries() {
 
     resultsCount.textContent = "Unable to load destinations";
   } finally {
-    isLoading = false;
     refreshBtn.disabled = false;
     refreshBtn.textContent = "↻ Refresh";
   }
 }
 
-// CREATE COUNTRY CARDS
-function displayCountries(countries) {
-  countriesContainer.replaceChildren();
+// FAVOURITE BUTTON
+function updateFavouriteButton(button, isFavourite) {
+  button.textContent = isFavourite
+    ? "♥ Remove Favourite"
+    : "♡ Add to Favourites";
 
+  button.setAttribute("aria-pressed", String(isFavourite));
+}
+
+function toggleFavourite(button) {
+  const code = button.dataset.country;
+  const wasFavourite = favourites.includes(code);
+
+  favourites = wasFavourite
+    ? favourites.filter((item) => item !== code)
+    : [...favourites, code];
+
+  saveFavourites();
+
+  // Only the favourites view changes its list; elsewhere just this button changes.
+  if (currentView === "favourites") {
+    applyFilters();
+  } else {
+    updateFavouriteButton(button, !wasFavourite);
+  }
+}
+
+// CREATE COUNTRY CARD
+function createCountryCard(country) {
+  const card = makeElement("article", "country-card");
+
+  const flag = document.createElement("img");
+  flag.src = getFlag(country);
+  flag.alt = `Flag of ${country.name.common}`;
+  flag.loading = "lazy";
+
+  const content = makeElement("div", "country-card-content");
+
+  const name = makeElement(
+    "h3",
+    "",
+    country.name.common
+  );
+
+  const capital = makeElement(
+    "p",
+    "",
+    `Capital: ${formatList(country.capital)}`
+  );
+
+  const population = makeElement(
+    "p",
+    "",
+    `Population: ${formatNumber(country.population)}`
+  );
+
+  const region = makeElement(
+    "p",
+    "",
+    `Region: ${country.region || "N/A"}`
+  );
+
+  const detailsButton = makeElement(
+    "button",
+    "details-btn",
+    "🌍 View Details"
+  );
+
+  detailsButton.type = "button";
+  detailsButton.dataset.country = country.cca3;
+
+  const favouriteButton = makeElement("button", "favourite-btn");
+
+  favouriteButton.type = "button";
+  favouriteButton.dataset.country = country.cca3;
+  updateFavouriteButton(
+    favouriteButton,
+    favourites.includes(country.cca3)
+  );
+
+  content.append(
+    name,
+    capital,
+    population,
+    region,
+    detailsButton,
+    favouriteButton
+  );
+
+  card.append(flag, content);
+
+  return card;
+}
+
+// RENDER COUNTRIES IN BATCHES
+// Adding 250 cards at once is slow, so cards are added as the user scrolls.
+function renderNextBatch() {
+  const batch = visibleCountries.slice(
+    renderedCount,
+    renderedCount + CARDS_PER_BATCH
+  );
+
+  if (batch.length === 0) return;
+
+  countriesContainer.append(
+    ...batch.map((country) => createCountryCard(country))
+  );
+
+  renderedCount += batch.length;
+}
+
+function displayCountries(countries) {
   resultsCount.textContent =
     `${formatNumber(countries.length)} ${
       countries.length === 1 ? "country" : "countries"
     } found`;
 
   if (countries.length === 0) {
-    showStatus(
-      currentView === "favourites"
-        ? "No favourite countries match your filters. Add countries to your favourites to see them here."
-        : "No countries found. Try a different search or region.",
-      "empty"
-    );
+    showStatus(getEmptyMessage(), "empty");
     return;
   }
 
-  const fragment = document.createDocumentFragment();
+  clearCountryList();
+  visibleCountries = countries;
+  renderNextBatch();
+}
 
-  countries.forEach((country) => {
-    const card = makeElement("article", "country-card");
+function getEmptyMessage() {
+  if (currentView !== "favourites") {
+    return "No countries found. Try a different search or region.";
+  }
 
-    const flag = document.createElement("img");
-    flag.src = getFlag(country);
-    flag.alt = `Flag of ${country.name.common}`;
-    flag.loading = "lazy";
-
-    const content = makeElement("div", "country-card-content");
-
-    const name = makeElement(
-      "h3",
-      "",
-      country.name.common
-    );
-
-    const capital = makeElement(
-      "p",
-      "",
-      `Capital: ${formatList(country.capital)}`
-    );
-
-    const population = makeElement(
-      "p",
-      "",
-      `Population: ${formatNumber(country.population)}`
-    );
-
-    const region = makeElement(
-      "p",
-      "",
-      `Region: ${country.region || "N/A"}`
-    );
-
-    const detailsButton = makeElement(
-      "button",
-      "details-btn",
-      "🌍 View Details"
-    );
-
-    detailsButton.type = "button";
-    detailsButton.dataset.country = country.cca3;
-
-    const isFavourite = favourites.includes(country.cca3);
-
-    const favouriteButton = makeElement(
-      "button",
-      "favourite-btn",
-      isFavourite
-        ? "♥ Remove Favourite"
-        : "♡ Add to Favourites"
-    );
-
-    favouriteButton.type = "button";
-    favouriteButton.dataset.country = country.cca3;
-    favouriteButton.setAttribute(
-      "aria-pressed",
-      String(isFavourite)
-    );
-
-    content.append(
-      name,
-      capital,
-      population,
-      region,
-      detailsButton,
-      favouriteButton
-    );
-
-    card.append(flag, content);
-    fragment.appendChild(card);
-  });
-
-  countriesContainer.appendChild(fragment);
+  return favourites.length === 0
+    ? "You have no favourites yet. Add a country from All Countries to see it here."
+    : "No favourite countries match your search or region.";
 }
 
 // SEARCH, FILTER AND SORT
 function applyFilters() {
+  // Keep the skeletons or error message on screen until data has loaded.
+  if (loadState !== "ready") return;
+
   const searchTerm = searchInput.value.trim().toLowerCase();
   const selectedRegion = regionFilter.value;
   const sortBy = sortSelect.value;
@@ -365,7 +518,6 @@ function setActiveView(view) {
 
   if (view === "compare") {
     populateCompareDropdowns();
-    compareResults.replaceChildren();
     scrollToSection(compareSection);
   } else {
     applyFilters();
@@ -426,6 +578,11 @@ function showCountryDetails(countryCode) {
 
   if (!country) return;
 
+  // Remember where the user was, unless they arrived from a border chip.
+  if (!countriesSection.hidden) {
+    listScrollPosition = window.scrollY;
+  }
+
   detailsContainer.replaceChildren();
 
   // Profile header
@@ -467,27 +624,16 @@ function showCountryDetails(countryCode) {
     ["👥 Population", formatNumber(country.population)],
     ["🌍 Region", country.region || "N/A"],
     ["🧭 Subregion", country.subregion || "N/A"],
-    ["📐 Area", country.area != null
-      ? `${formatNumber(country.area)} km²`
-      : "N/A"],
+    ["📐 Area", formatArea(country.area)],
     ["💰 Currencies", formatList(getCurrencyNames(country))],
     ["🗣️ Languages", formatList(getLanguages(country))],
     ["🕒 Time Zones", formatList(country.timezones)],
     ["☎️ Calling Code", getCallingCode(country)],
-    ["🚗 Driving Side", country.car?.side
-      ? country.car.side.charAt(0).toUpperCase() +
-        country.car.side.slice(1)
-      : "N/A"],
+    ["🚗 Driving Side", getDrivingSide(country)],
     ["🌐 Internet Domain", formatList(country.tld)],
-    ["🏝️ Landlocked", typeof country.landlocked === "boolean"
-      ? country.landlocked ? "Yes" : "No"
-      : "N/A"],
-    ["🏳️ Independent", typeof country.independent === "boolean"
-      ? country.independent ? "Yes" : "No"
-      : "N/A"],
-    ["🇺🇳 UN Member", typeof country.unMember === "boolean"
-      ? country.unMember ? "Yes" : "No"
-      : "N/A"],
+    ["🏝️ Landlocked", formatYesNo(country.landlocked)],
+    ["🏳️ Independent", formatYesNo(country.independent)],
+    ["🇺🇳 UN Member", formatYesNo(country.unMember)],
     ["🌎 Continents", formatList(country.continents)]
   ];
 
@@ -578,9 +724,16 @@ function showCountryDetails(countryCode) {
 function populateCompareDropdowns() {
   compareCountry1.replaceChildren();
   compareCountry2.replaceChildren();
+  compareResults.replaceChildren();
 
   compareCountry1.add(new Option("Select first country", ""));
   compareCountry2.add(new Option("Select second country", ""));
+
+  if (allCountries.length === 0) {
+    compareResults.textContent =
+      "Country data has not loaded yet. Go back and try refreshing.";
+    return;
+  }
 
   const favouriteCountries = allCountries.filter(
     (country) => favourites.includes(country.cca3)
@@ -638,14 +791,12 @@ function createComparisonCard(country) {
     ["Population", formatNumber(country.population)],
     ["Region", country.region || "N/A"],
     ["Subregion", country.subregion || "N/A"],
-    ["Area", country.area != null
-      ? `${formatNumber(country.area)} km²`
-      : "N/A"],
+    ["Area", formatArea(country.area)],
     ["Currencies", formatList(getCurrencyNames(country))],
     ["Languages", formatList(getLanguages(country))],
     ["Time Zones", formatList(country.timezones)],
     ["Calling Code", getCallingCode(country)],
-    ["Driving Side", country.car?.side || "N/A"]
+    ["Driving Side", getDrivingSide(country)]
   ];
 
   card.append(name, flag);
@@ -658,11 +809,15 @@ function createComparisonCard(country) {
 }
 
 // EVENTS
-searchInput.addEventListener("input", applyFilters);
+searchInput.addEventListener(
+  "input",
+  debounce(applyFilters, SEARCH_DELAY_MS)
+);
 regionFilter.addEventListener("change", applyFilters);
 sortSelect.addEventListener("change", applyFilters);
 
 refreshBtn.addEventListener("click", fetchCountries);
+themeToggle.addEventListener("click", toggleTheme);
 
 allCountriesBtn.addEventListener("click", () => {
   setActiveView("all");
@@ -676,42 +831,32 @@ compareViewBtn.addEventListener("click", () => {
   setActiveView("compare");
 });
 
-// CARD ACTIONS
+// CARD ACTIONS (one delegated listener handles every card and the retry button)
 countriesContainer.addEventListener("click", (event) => {
-  if (!(event.target instanceof Element)) return;
-
   const detailsButton = event.target.closest(".details-btn");
 
-  if (detailsButton && countriesContainer.contains(detailsButton)) {
+  if (detailsButton) {
     showCountryDetails(detailsButton.dataset.country);
     return;
   }
 
   const favouriteButton = event.target.closest(".favourite-btn");
 
-  if (!favouriteButton || !countriesContainer.contains(favouriteButton)) {
+  if (favouriteButton) {
+    toggleFavourite(favouriteButton);
     return;
   }
 
-  const code = favouriteButton.dataset.country;
-
-  if (favourites.includes(code)) {
-    favourites = favourites.filter((item) => item !== code);
-  } else {
-    favourites.push(code);
+  if (event.target.closest(".retry-btn")) {
+    fetchCountries();
   }
-
-  saveFavourites();
-  applyFilters();
 });
 
 // CLICKABLE NEIGHBOURS
 detailsContainer.addEventListener("click", (event) => {
-  if (!(event.target instanceof Element)) return;
-
   const button = event.target.closest(".border-btn");
 
-  if (button && detailsContainer.contains(button)) {
+  if (button) {
     showCountryDetails(button.dataset.country);
   }
 });
@@ -722,7 +867,7 @@ backBtn.addEventListener("click", () => {
   countriesSection.hidden = false;
   compareSection.hidden = true;
 
-  scrollToSection(countriesSection);
+  window.scrollTo({ top: listScrollPosition, behavior: "instant" });
 });
 
 // BACK FROM COMPARISON
@@ -773,6 +918,17 @@ compareBtn.addEventListener("click", () => {
   compareResults.appendChild(grid);
 });
 
+// LOAD MORE CARDS WHEN THE USER NEARS THE END OF THE LIST
+const loadMoreObserver = new IntersectionObserver(
+  (entries) => {
+    if (entries[0].isIntersecting) renderNextBatch();
+  },
+  { rootMargin: "600px" }
+);
+
+loadMoreObserver.observe(loadMoreSentinel);
+
 // INITIAL LOAD
+applyTheme(document.documentElement.dataset.theme);
 updateStatistics();
 fetchCountries();

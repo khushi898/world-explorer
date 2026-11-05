@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
 
@@ -32,6 +32,17 @@
 
   <link rel="stylesheet" href="style.css">
 
+  <!-- Applies the saved theme before the first paint, so light mode doesn't flash dark. -->
+  <script>
+    try {
+      if (localStorage.getItem("worldExplorerTheme") === "light") {
+        document.documentElement.dataset.theme = "light";
+      }
+    } catch (error) {
+      console.error("Unable to read theme:", error);
+    }
+  </script>
+
   <script src="script.js" defer></script>
 </head>
 
@@ -58,6 +69,12 @@
           Start Exploring
           <span aria-hidden="true">↗</span>
         </a>
+
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+        ></button>
       </div>
 
     </nav>
@@ -178,7 +195,7 @@
       </div>
 
       <!-- VIEW NAVIGATION -->
-      <div class="view-buttons" aria-label="Country views">
+      <div class="view-buttons" role="group" aria-label="Country views">
 
         <button
           type="button"
@@ -302,12 +319,10 @@
       <div
         id="countries-container"
         class="countries-grid"
-        aria-live="polite"
-      >
-        <p class="status-message status-loading">
-          Loading countries...
-        </p>
-      </div>
+      ></div>
+
+      <!-- Scrolling near this element loads the next batch of cards. -->
+      <div id="load-more-sentinel" aria-hidden="true"></div>
 
     </section>
 
