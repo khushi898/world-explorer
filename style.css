@@ -22,6 +22,8 @@
   --pink: #ff829e;
   --favourite-text: #ff9fb4;
   --chip-text: #85f5e7;
+  --skeleton-base: #162e45;
+  --skeleton-shine: #24435f;
   --card-gradient: linear-gradient(160deg, #152b40, #0d2033);
   --panel-gradient: linear-gradient(150deg, #122a40, #0c1e31);
   --hero-gradient: linear-gradient(100deg, #48e9d6, #75c4ff, #a7a0ff);
@@ -47,6 +49,8 @@
   --pink: #c2264f;
   --favourite-text: #b01f46;
   --chip-text: #0a6d63;
+  --skeleton-base: #e0e9f0;
+  --skeleton-shine: #f3f7fa;
   --card-gradient: linear-gradient(160deg, #ffffff, #f6f9fc);
   --panel-gradient: linear-gradient(150deg, #ffffff, #f6f9fc);
   --hero-gradient: linear-gradient(100deg, #0a8a7c, #1f6fd1, #5b4fd6);
@@ -810,6 +814,63 @@ select option {
 
 .status-error {
   color: #ff9eae;
+}
+
+/* Skeleton loaders */
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding-bottom: 21px;
+  overflow: hidden;
+  background: var(--card-gradient);
+  border: 1px solid var(--border);
+  border-radius: 19px;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-shine) 50%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeleton-flag {
+  height: 165px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line {
+  width: 70%;
+  height: 13px;
+  margin: 0 21px;
+  border-radius: 6px;
+}
+
+.skeleton-title {
+  width: 55%;
+  height: 22px;
+}
+
+.skeleton-button {
+  width: calc(100% - 42px);
+  height: 43px;
+  margin-top: 12px;
+  border-radius: 10px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 /* ==========================================

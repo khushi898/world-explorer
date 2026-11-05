@@ -37,6 +37,7 @@ const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 // SETTINGS
 const STORAGE_KEY = "worldExplorerFavourites";
 const THEME_KEY = "worldExplorerTheme";
+const SKELETON_CARD_COUNT = 8;
 const SEARCH_DELAY_MS = 250;
 const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
 
@@ -205,7 +206,26 @@ function updateStatistics() {
   totalFavourites.textContent = favourites.length;
 }
 
-// STATUS MESSAGES
+// LIST STATES
+function showSkeletons() {
+  countriesContainer.replaceChildren();
+
+  for (let i = 0; i < SKELETON_CARD_COUNT; i++) {
+    const card = makeElement("div", "skeleton-card");
+    card.setAttribute("aria-hidden", "true");
+
+    card.append(
+      makeElement("div", "skeleton skeleton-flag"),
+      makeElement("div", "skeleton skeleton-line skeleton-title"),
+      makeElement("div", "skeleton skeleton-line"),
+      makeElement("div", "skeleton skeleton-line"),
+      makeElement("div", "skeleton skeleton-line skeleton-button")
+    );
+
+    countriesContainer.appendChild(card);
+  }
+}
+
 function showStatus(message, type = "info") {
   countriesContainer.replaceChildren();
 
@@ -227,7 +247,7 @@ async function fetchCountries() {
   refreshBtn.disabled = true;
   refreshBtn.textContent = "↻ Refreshing...";
 
-  showStatus("Loading countries...", "loading");
+  showSkeletons();
   resultsCount.textContent = "Loading destinations...";
 
   try {
