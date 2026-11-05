@@ -34,7 +34,7 @@ const refreshBtn = document.getElementById("refresh-btn");
 // APPLICATION STATE
 let allCountries = [];
 let currentView = "all";
-let isLoading = false;
+let loadState = "idle"; // idle | loading | ready | error
 
 const STORAGE_KEY = "worldExplorerFavourites";
 
@@ -179,9 +179,10 @@ function showStatus(message, type = "info") {
 
 // FETCH COUNTRIES
 async function fetchCountries() {
-  if (isLoading) return;
+  // Only one request runs at a time, so responses can never arrive out of order.
+  if (loadState === "loading") return;
 
-  isLoading = true;
+  loadState = "loading";
   refreshBtn.disabled = true;
   refreshBtn.textContent = "↻ Refreshing...";
 
@@ -209,11 +210,18 @@ async function fetchCountries() {
         a.name.common.localeCompare(b.name.common)
       );
 
+    loadState = "ready";
     updateStatistics();
     applyFilters();
 
+    if (currentView === "compare") {
+      populateCompareDropdowns();
+    }
+
   } catch (error) {
     console.error("Country API error:", error);
+
+    loadState = "error";
 
     showStatus(
       "Unable to load countries. Please check your connection and try again.",
@@ -222,7 +230,6 @@ async function fetchCountries() {
 
     resultsCount.textContent = "Unable to load destinations";
   } finally {
-    isLoading = false;
     refreshBtn.disabled = false;
     refreshBtn.textContent = "↻ Refresh";
   }
@@ -327,6 +334,9 @@ function displayCountries(countries) {
 
 // SEARCH, FILTER AND SORT
 function applyFilters() {
+  // Keep the skeletons or error message on screen until data has loaded.
+  if (loadState !== "ready") return;
+
   const searchTerm = searchInput.value.trim().toLowerCase();
   const selectedRegion = regionFilter.value;
   const sortBy = sortSelect.value;
