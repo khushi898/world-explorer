@@ -5,6 +5,7 @@
 
 // DOM ELEMENTS
 const countriesContainer = document.getElementById("countries-container");
+const loadMoreSentinel = document.getElementById("load-more-sentinel");
 const searchInput = document.getElementById("search-input");
 const regionFilter = document.getElementById("region-filter");
 const sortSelect = document.getElementById("sort-select");
@@ -37,6 +38,7 @@ const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 // SETTINGS
 const STORAGE_KEY = "worldExplorerFavourites";
 const THEME_KEY = "worldExplorerTheme";
+const CARDS_PER_BATCH = 40;
 const SKELETON_CARD_COUNT = 8;
 const SEARCH_DELAY_MS = 250;
 const STATUS_ICONS = { error: "⚠️", empty: "🔍" };
@@ -46,6 +48,8 @@ const THEME_COLORS = { dark: "#071421", light: "#f3f7fb" };
 let allCountries = [];
 let currentView = "all";
 let loadState = "idle"; // idle | loading | ready | error
+let visibleCountries = [];
+let renderedCount = 0;
 let favourites = [];
 
 try {
@@ -208,8 +212,14 @@ function updateStatistics() {
 }
 
 // LIST STATES
-function showSkeletons() {
+function clearCountryList() {
+  visibleCountries = [];
+  renderedCount = 0;
   countriesContainer.replaceChildren();
+}
+
+function showSkeletons() {
+  clearCountryList();
 
   for (let i = 0; i < SKELETON_CARD_COUNT; i++) {
     const card = makeElement("div", "skeleton-card");
@@ -228,7 +238,7 @@ function showSkeletons() {
 }
 
 function showStatus(message, type) {
-  countriesContainer.replaceChildren();
+  clearCountryList();
 
   const status = makeElement("div", `status-message status-${type}`);
 
@@ -400,6 +410,23 @@ function createCountryCard(country) {
   return card;
 }
 
+// RENDER COUNTRIES IN BATCHES
+// Adding 250 cards at once is slow, so cards are added as the user scrolls.
+function renderNextBatch() {
+  const batch = visibleCountries.slice(
+    renderedCount,
+    renderedCount + CARDS_PER_BATCH
+  );
+
+  if (batch.length === 0) return;
+
+  countriesContainer.append(
+    ...batch.map((country) => createCountryCard(country))
+  );
+
+  renderedCount += batch.length;
+}
+
 function displayCountries(countries) {
   resultsCount.textContent =
     `${formatNumber(countries.length)} ${
@@ -411,14 +438,9 @@ function displayCountries(countries) {
     return;
   }
 
-  const fragment = document.createDocumentFragment();
-
-  countries.forEach((country) => {
-    fragment.appendChild(createCountryCard(country));
-  });
-
-  countriesContainer.replaceChildren();
-  countriesContainer.appendChild(fragment);
+  clearCountryList();
+  visibleCountries = countries;
+  renderNextBatch();
 }
 
 function getEmptyMessage() {
@@ -888,6 +910,16 @@ compareBtn.addEventListener("click", () => {
 
   compareResults.appendChild(grid);
 });
+
+// LOAD MORE CARDS WHEN THE USER NEARS THE END OF THE LIST
+const loadMoreObserver = new IntersectionObserver(
+  (entries) => {
+    if (entries[0].isIntersecting) renderNextBatch();
+  },
+  { rootMargin: "600px" }
+);
+
+loadMoreObserver.observe(loadMoreSentinel);
 
 // INITIAL LOAD
 applyTheme(document.documentElement.dataset.theme);
