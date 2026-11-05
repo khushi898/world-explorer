@@ -68,6 +68,18 @@ function formatList(values) {
     : "N/A";
 }
 
+function formatArea(area) {
+  return area != null
+    ? `${formatNumber(area)} km²`
+    : "N/A";
+}
+
+function formatYesNo(value) {
+  if (typeof value !== "boolean") return "N/A";
+
+  return value ? "Yes" : "No";
+}
+
 function getCurrencyNames(country) {
   return Object.entries(country.currencies || {}).map(
     ([code, currency]) =>
@@ -96,6 +108,14 @@ function getCallingCode(country) {
   }
 
   return suffixes.map((suffix) => `${root}${suffix}`).join(", ");
+}
+
+function getDrivingSide(country) {
+  const side = country.car?.side;
+
+  return side
+    ? side.charAt(0).toUpperCase() + side.slice(1)
+    : "N/A";
 }
 
 function getFlag(country) {
@@ -466,27 +486,16 @@ function showCountryDetails(countryCode) {
     ["👥 Population", formatNumber(country.population)],
     ["🌍 Region", country.region || "N/A"],
     ["🧭 Subregion", country.subregion || "N/A"],
-    ["📐 Area", country.area != null
-      ? `${formatNumber(country.area)} km²`
-      : "N/A"],
+    ["📐 Area", formatArea(country.area)],
     ["💰 Currencies", formatList(getCurrencyNames(country))],
     ["🗣️ Languages", formatList(getLanguages(country))],
     ["🕒 Time Zones", formatList(country.timezones)],
     ["☎️ Calling Code", getCallingCode(country)],
-    ["🚗 Driving Side", country.car?.side
-      ? country.car.side.charAt(0).toUpperCase() +
-        country.car.side.slice(1)
-      : "N/A"],
+    ["🚗 Driving Side", getDrivingSide(country)],
     ["🌐 Internet Domain", formatList(country.tld)],
-    ["🏝️ Landlocked", typeof country.landlocked === "boolean"
-      ? country.landlocked ? "Yes" : "No"
-      : "N/A"],
-    ["🏳️ Independent", typeof country.independent === "boolean"
-      ? country.independent ? "Yes" : "No"
-      : "N/A"],
-    ["🇺🇳 UN Member", typeof country.unMember === "boolean"
-      ? country.unMember ? "Yes" : "No"
-      : "N/A"],
+    ["🏝️ Landlocked", formatYesNo(country.landlocked)],
+    ["🏳️ Independent", formatYesNo(country.independent)],
+    ["🇺🇳 UN Member", formatYesNo(country.unMember)],
     ["🌎 Continents", formatList(country.continents)]
   ];
 
@@ -644,14 +653,12 @@ function createComparisonCard(country) {
     ["Population", formatNumber(country.population)],
     ["Region", country.region || "N/A"],
     ["Subregion", country.subregion || "N/A"],
-    ["Area", country.area != null
-      ? `${formatNumber(country.area)} km²`
-      : "N/A"],
+    ["Area", formatArea(country.area)],
     ["Currencies", formatList(getCurrencyNames(country))],
     ["Languages", formatList(getLanguages(country))],
     ["Time Zones", formatList(country.timezones)],
     ["Calling Code", getCallingCode(country)],
-    ["Driving Side", country.car?.side || "N/A"]
+    ["Driving Side", getDrivingSide(country)]
   ];
 
   card.append(name, flag);
